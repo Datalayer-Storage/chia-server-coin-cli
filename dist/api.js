@@ -7,12 +7,13 @@ const chia_wallet_lib_1 = require("chia-wallet-lib");
 const clvm_lib_1 = require("clvm-lib");
 const utils_1 = require("./utils");
 const constants_1 = require("./constants");
+const chia_condition_codes_1 = require("chia-condition-codes");
 const mirrorPuzzle = (0, utils_1.loadPuzzle)("p2_parent");
 // curry in morpher = 1
 const curriedMirrorPuzzle = mirrorPuzzle.curry([clvm_lib_1.Program.fromInt(1)]);
 const createServerCoin = async (launcherId, urls, amount = constants_1.constants.defaultCoinAmountInMojo, options) => {
-    const wallet = await (0, utils_1.getWallet)(options);
     const node = await (0, utils_1.getNode)(options);
+    const wallet = await (0, utils_1.getWallet)(node);
     console.log("Creating MIrror");
     await wallet.sync();
     const hint = clvm_lib_1.Program.fromBigInt(launcherId.toBigInt() + 1n)
@@ -23,22 +24,22 @@ const createServerCoin = async (launcherId, urls, amount = constants_1.constants
     if (!fee) {
         fee = await (0, utils_1.calculateFee)();
     }
-    console.log('@@@@@');
+    console.log("@@@@@");
     const coinRecords = wallet.selectCoinRecords(amount + fee, chia_wallet_lib_1.CoinSelection.Smallest);
-    console.log('!!!!!');
+    console.log("!!!!!");
     if (!coinRecords.length)
         throw new Error("Insufficient balance");
     const totalValue = coinRecords.reduce((acc, coinRecord) => {
         return acc + coinRecord.coin.amount;
     }, 0);
-    const changeAmount = totalValue - fee - 1;
+    const changeAmount = totalValue - fee - amount;
     const coinSpends = coinRecords.map((coinRecord, index) => {
         const spentPuzzle = wallet.puzzleCache.find((puzzle) => puzzle.hashHex() === (0, chia_rpc_1.sanitizeHex)(coinRecord.coin.puzzle_hash));
         let solution = [];
         if (index === 0) {
-            solution.push(clvm_lib_1.Program.fromSource(`(51 0x${curriedMirrorPuzzle.hashHex()} ${amount} (0x${hint} ${urls.join(" ")}))`));
+            solution.push(clvm_lib_1.Program.fromSource(`(${chia_condition_codes_1.ConditionCodes.CREATE_COIN} 0x${curriedMirrorPuzzle.hashHex()} ${amount} (0x${hint} ${urls.join(" ")}))`));
             // Send the change to the same address
-            solution.push(clvm_lib_1.Program.fromSource(`(51 ${(0, chia_rpc_1.formatHex)(coinRecord.coin.puzzle_hash)} ${changeAmount})`));
+            solution.push(clvm_lib_1.Program.fromSource(`(${chia_condition_codes_1.ConditionCodes.CREATE_COIN} ${(0, chia_rpc_1.formatHex)(coinRecord.coin.puzzle_hash)} ${changeAmount})`));
         }
         const coinSpend = {
             coin: coinRecord.coin,
@@ -52,14 +53,14 @@ const createServerCoin = async (launcherId, urls, amount = constants_1.constants
         aggregated_signature: chia_bls_1.JacobianPoint.infinityG2().toHex(),
     };
     console.log(JSON.stringify(spendBundle, null, 2));
-    const aggSigMeExtraData = (0, chia_bls_1.fromHex)((0, utils_1.getGenisisChallenge)());
+    const aggSigMeExtraData = (0, chia_bls_1.fromHex)((0, utils_1.getGenesisChallenge)());
     wallet.signSpend(spendBundle, aggSigMeExtraData);
     console.log(await node.pushTx(spendBundle));
 };
 exports.createServerCoin = createServerCoin;
 const deleteServerCoin = async (coinId, options) => {
-    const wallet = await (0, utils_1.getWallet)(options);
     const node = await (0, utils_1.getNode)(options);
+    const wallet = await (0, utils_1.getWallet)(node);
     await wallet.sync();
     const coinRecordResponse = await node.getCoinRecordByName(coinId);
     if (!coinRecordResponse.success) {
@@ -86,13 +87,13 @@ const deleteServerCoin = async (coinId, options) => {
     const totalValue = coinRecords.reduce((acc, coinRecord) => {
         return acc + coinRecord.coin.amount;
     }, 0);
-    const changeAmount = totalValue - fee - 1;
+    const changeAmount = totalValue - fee;
     const coinSpends = coinRecords.map((coinRecord, index) => {
         const spentPuzzle = wallet.puzzleCache.find((puzzle) => puzzle.hashHex() === (0, chia_rpc_1.sanitizeHex)(coinRecord.coin.puzzle_hash));
         let solution = [];
         if (index === 0) {
             // Send the change to the same address
-            solution.push(clvm_lib_1.Program.fromSource(`(51 ${(0, chia_rpc_1.formatHex)(coinRecord.coin.puzzle_hash)} ${changeAmount})`));
+            solution.push(clvm_lib_1.Program.fromSource(`(${chia_condition_codes_1.ConditionCodes.CREATE_COIN} ${(0, chia_rpc_1.formatHex)(coinRecord.coin.puzzle_hash)} ${changeAmount})`));
         }
         const coinSpend = {
             coin: coinRecord.coin,
@@ -111,15 +112,14 @@ const deleteServerCoin = async (coinId, options) => {
         coin_spends: coinSpends,
         aggregated_signature: chia_bls_1.JacobianPoint.infinityG2().toHex(),
     };
-    console.log(spendBundle);
-    const aggSigMeExtraData = (0, chia_bls_1.fromHex)((0, utils_1.getGenisisChallenge)());
+    const aggSigMeExtraData = (0, chia_bls_1.fromHex)((0, utils_1.getGenesisChallenge)());
     wallet.signSpend(spendBundle, aggSigMeExtraData);
     console.log(await node.pushTx(spendBundle));
 };
 exports.deleteServerCoin = deleteServerCoin;
 const getServerCoinsByLauncherId = async (launcherId, options) => {
-    const wallet = await (0, utils_1.getWallet)(options);
     const node = await (0, utils_1.getNode)(options);
+    const wallet = await (0, utils_1.getWallet)(node);
     await wallet.sync();
     // Hint is launcherId + 1 to distinguish from Mirror Coin
     const hint = clvm_lib_1.Program.fromBigInt(launcherId.toBigInt() + 1n)

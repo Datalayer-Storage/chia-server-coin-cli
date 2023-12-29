@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGenisisChallenge = exports.calculateFee = exports.loadPuzzle = exports.getWallet = exports.getNode = void 0;
+exports.getGenesisChallenge = exports.calculateFee = exports.loadPuzzle = exports.getWallet = exports.getNode = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const chia_bls_1 = require("chia-bls");
@@ -17,9 +17,11 @@ const constants_1 = require("./constants");
 const getNode = (options = {}) => {
     const defaultCertFolderPath = `${process.env.CHIA_ROOT}/config/ssl`;
     const resolvePath = (subPath) => path_1.default.resolve(`${options.certificateFolderPath || defaultCertFolderPath}/${subPath}`);
+    const config = (0, chia_config_loader_1.getChiaConfig)();
+    const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
     const node = new chia_rpc_1.FullNode({
-        host: options.fullNodeHost || "192.168.86.250",
-        port: options.fullNodePort || 8555,
+        host: options.fullNodeHost || "localhost",
+        port: options.fullNodePort || defaultFullNodePort,
         certPath: resolvePath("full_node/private_full_node.crt"),
         keyPath: resolvePath("full_node/private_full_node.key"),
         caCertPath: resolvePath("ca/chia_ca.crt"),
@@ -27,9 +29,11 @@ const getNode = (options = {}) => {
     return node;
 };
 exports.getNode = getNode;
-const getWallet = async (options = {}) => {
-    const node = (0, exports.getNode)(options);
+const getWallet = async (node) => {
+    const config = (0, chia_config_loader_1.getChiaConfig)();
+    const defaultWalletPort = config?.wallet?.rpc_port || 9256;
     const walletRpc = new chia_wallet_1.default({
+        wallet_host: `https://localhost:${defaultWalletPort}`,
         certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
     });
     const fingerprintInfo = await walletRpc.getLoggedInFingerprint({});
@@ -62,7 +66,7 @@ const calculateFee = () => {
     return chia_fee_estimator_1.default.getFeeEstimate();
 };
 exports.calculateFee = calculateFee;
-const getGenisisChallenge = () => {
+const getGenesisChallenge = () => {
     const config = (0, chia_config_loader_1.getChiaConfig)();
     const genesisChallenge = config?.farmer?.network_overrides?.constants?.mainnet?.GENESIS_CHALLENGE;
     if (!genesisChallenge) {
@@ -70,4 +74,4 @@ const getGenisisChallenge = () => {
     }
     return genesisChallenge;
 };
-exports.getGenisisChallenge = getGenisisChallenge;
+exports.getGenesisChallenge = getGenesisChallenge;
