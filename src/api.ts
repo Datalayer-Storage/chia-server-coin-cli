@@ -199,8 +199,6 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
     aggregated_signature: JacobianPoint.infinityG2().toHex(),
   };
 
-  console.log(spendBundle);
-
   const aggSigMeExtraData = fromHex(getGenisisChallenge());
 
   wallet.signSpend(spendBundle, aggSigMeExtraData);

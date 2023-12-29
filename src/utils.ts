@@ -25,7 +25,7 @@ export const getNode = (options: Options = {}) => {
     );
 
   const node = new FullNode({
-    host: options.fullNodeHost || "192.168.86.250",
+    host: options.fullNodeHost || "localhost",
     port: options.fullNodePort || 8555,
     certPath: resolvePath("full_node/private_full_node.crt"),
     keyPath: resolvePath("full_node/private_full_node.key"),
