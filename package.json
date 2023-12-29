@@ -1,6 +1,6 @@
 {
   "name": "chia-server-coin-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "CLI for creating a server coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
   "main": "dist/index.js",
   "bin": {
@@ -31,6 +31,7 @@
   "dependencies": {
     "bip39": "^3.1.0",
     "chia-bls": "^1.0.1",
+    "chia-condition-codes": "^1.0.5",
     "chia-config-loader": "^1.0.1",
     "chia-fee-estimator": "^1.0.9",
     "chia-rpc": "^1.1.1",

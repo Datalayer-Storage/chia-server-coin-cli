@@ -24,9 +24,12 @@ export const getNode = (options: Options = {}) => {
       `${options.certificateFolderPath || defaultCertFolderPath}/${subPath}`
     );
 
+  const config = getChiaConfig();
+  const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
+
   const node = new FullNode({
     host: options.fullNodeHost || "localhost",
-    port: options.fullNodePort || 8555,
+    port: options.fullNodePort || defaultFullNodePort,
     certPath: resolvePath("full_node/private_full_node.crt"),
     keyPath: resolvePath("full_node/private_full_node.key"),
     caCertPath: resolvePath("ca/chia_ca.crt"),
@@ -36,7 +39,11 @@ export const getNode = (options: Options = {}) => {
 };
 
 export const getWallet = async (node: FullNode) => {
+  const config = getChiaConfig();
+  const defaultWalletPort = config?.wallet?.rpc_port || 9256;
+
   const walletRpc = new WalletRpc({
+    wallet_host: `https://localhost:${defaultWalletPort}`,
     certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
   });
   const fingerprintInfo = await walletRpc.getLoggedInFingerprint({});

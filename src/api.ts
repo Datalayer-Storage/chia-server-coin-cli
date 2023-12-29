@@ -17,6 +17,7 @@ import {
 } from "./utils";
 import { constants } from "./constants";
 import { Options } from "./utils";
+import { ConditionCodes } from "chia-condition-codes";
 
 const mirrorPuzzle = loadPuzzle("p2_parent");
 
@@ -31,7 +32,7 @@ export const createServerCoin = async (
 ) => {
   const node = await getNode(options);
   const wallet = await getWallet(node);
-  
+
   console.log("Creating MIrror");
   await wallet.sync();
 
@@ -45,14 +46,14 @@ export const createServerCoin = async (
     fee = await calculateFee();
   }
 
-  console.log('@@@@@');
+  console.log("@@@@@");
 
   const coinRecords = wallet.selectCoinRecords(
     amount + fee,
     CoinSelection.Smallest
   );
 
-  console.log('!!!!!');
+  console.log("!!!!!");
 
   if (!coinRecords.length) throw new Error("Insufficient balance");
 
@@ -72,7 +73,9 @@ export const createServerCoin = async (
     if (index === 0) {
       solution.push(
         Program.fromSource(
-          `(51 0x${curriedMirrorPuzzle.hashHex()} ${amount} (0x${hint} ${urls.join(
+          `(${
+            ConditionCodes.CREATE_COIN
+          } 0x${curriedMirrorPuzzle.hashHex()} ${amount} (0x${hint} ${urls.join(
             " "
           )}))`
         )
@@ -81,7 +84,9 @@ export const createServerCoin = async (
       // Send the change to the same address
       solution.push(
         Program.fromSource(
-          `(51 ${formatHex(coinRecord.coin.puzzle_hash)} ${changeAmount})`
+          `(${ConditionCodes.CREATE_COIN} ${formatHex(
+            coinRecord.coin.puzzle_hash
+          )} ${changeAmount})`
         )
       );
     }
@@ -112,7 +117,7 @@ export const createServerCoin = async (
 export const deleteServerCoin = async (coinId: string, options?: Options) => {
   const node = await getNode(options);
   const wallet = await getWallet(node);
-  
+
   await wallet.sync();
 
   const coinRecordResponse = await node.getCoinRecordByName(coinId);
@@ -170,7 +175,9 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
       // Send the change to the same address
       solution.push(
         Program.fromSource(
-          `(51 ${formatHex(coinRecord.coin.puzzle_hash)} ${changeAmount})`
+          `(${ConditionCodes.CREATE_COIN} ${formatHex(
+            coinRecord.coin.puzzle_hash
+          )} ${changeAmount})`
         )
       );
     }
@@ -212,7 +219,7 @@ export const getServerCoinsByLauncherId = async (
 ) => {
   const node = await getNode(options);
   const wallet = await getWallet(node);
-  
+
   await wallet.sync();
 
   // Hint is launcherId + 1 to distinguish from Mirror Coin
