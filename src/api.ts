@@ -13,7 +13,7 @@ import {
   getNode,
   loadPuzzle,
   calculateFee,
-  getGenisisChallenge,
+  getGenesisChallenge,
 } from "./utils";
 import { constants } from "./constants";
 import { Options } from "./utils";
@@ -107,7 +107,7 @@ export const createServerCoin = async (
 
   console.log(JSON.stringify(spendBundle, null, 2));
 
-  const aggSigMeExtraData = fromHex(getGenisisChallenge());
+  const aggSigMeExtraData = fromHex(getGenesisChallenge());
 
   wallet.signSpend(spendBundle, aggSigMeExtraData);
 
@@ -206,7 +206,7 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
     aggregated_signature: JacobianPoint.infinityG2().toHex(),
   };
 
-  const aggSigMeExtraData = fromHex(getGenisisChallenge());
+  const aggSigMeExtraData = fromHex(getGenesisChallenge());
 
   wallet.signSpend(spendBundle, aggSigMeExtraData);
 

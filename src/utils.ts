@@ -85,7 +85,7 @@ export const calculateFee = () => {
   return chiaFeeEstimator.getFeeEstimate();
 };
 
-export const getGenisisChallenge = () => {
+export const getGenesisChallenge = () => {
   const config = getChiaConfig();
   const genesisChallenge =
     config?.farmer?.network_overrides?.constants?.mainnet?.GENESIS_CHALLENGE;
