@@ -73,9 +73,8 @@ export const getWallet = async (node: FullNode) => {
 };
 
 export const loadPuzzle = (puzzleName: string) => {
-  return Program.deserializeHex(
-    fs.readFileSync(`puzzles/${puzzleName}.clsp.hex`, "utf8")
-  );
+  const puzzlePath = path.join(__dirname, "../puzzles", `${puzzleName}.clsp.hex`);
+  return Program.deserializeHex(fs.readFileSync(puzzlePath, "utf8"));
 };
 
 export const calculateFee = () => {

@@ -2,14 +2,26 @@
   "name": "chia-server-coin-cli",
   "version": "1.0.9",
   "description": "CLI for creating a server coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "bin": {
-    "server_coin": "./dist/index.js"
+    "server_coin": "./build/index.js"
+  },
+  "pkg": {
+    "scripts": "build/**/*.js",
+    "assets": [
+      "node_modules/**/*",
+      "puzzles/**/*"
+    ]
   },
   "scripts": {
     "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "publish_pkg": "tsc && npm publish"
+    "publish_pkg": "rm -rf build && tsc && npm publish",
+    "prepare-binary": "rm -rf build && rm -rf dist && mkdir dist && tsc && cp -r puzzles build",
+    "create-win-x64-dist": "npm run prepare-binary && pkg package.json -t node18-win-x64 --out-path dist",
+    "create-mac-x64-dist": "npm run prepare-binary && pkg package.json -t node18-macos-x64 --out-path dist",
+    "create-linux-x64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-x64 --out-path dist",
+    "create-linux-arm64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-arm64 --out-path dist"
   },
   "repository": {
     "type": "git",
@@ -25,7 +37,9 @@
   },
   "homepage": "https://github.com/Datalayer-Storage/chia-server-coin-cli#readme",
   "devDependencies": {
+    "@types/node": "^20.10.5",
     "@types/yargs": "^17.0.32",
+    "pkg": "^5.8.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
