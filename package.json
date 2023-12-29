@@ -1,13 +1,14 @@
 {
   "name": "chia-server-coin-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI for creating a server coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "dist/index.js",
   "bin": {
-    "server_coin": "./src/index.ts"
+    "server_coin": "./dist/index.js"
   },
   "scripts": {
+    "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
