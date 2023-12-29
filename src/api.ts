@@ -29,9 +29,9 @@ export const createServerCoin = async (
   amount: number = constants.defaultCoinAmountInMojo,
   options?: Options
 ) => {
-  const wallet = await getWallet(options);
   const node = await getNode(options);
-
+  const wallet = await getWallet(node);
+  
   console.log("Creating MIrror");
   await wallet.sync();
 
@@ -60,7 +60,7 @@ export const createServerCoin = async (
     return acc + coinRecord.coin.amount;
   }, 0);
 
-  const changeAmount = totalValue - fee - 1;
+  const changeAmount = totalValue - fee - amount;
 
   const coinSpends = coinRecords.map((coinRecord, index) => {
     const spentPuzzle = wallet.puzzleCache.find(
@@ -110,9 +110,9 @@ export const createServerCoin = async (
 };
 
 export const deleteServerCoin = async (coinId: string, options?: Options) => {
-  const wallet = await getWallet(options);
   const node = await getNode(options);
-
+  const wallet = await getWallet(node);
+  
   await wallet.sync();
 
   const coinRecordResponse = await node.getCoinRecordByName(coinId);
@@ -157,7 +157,7 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
     return acc + coinRecord.coin.amount;
   }, 0);
 
-  const changeAmount = totalValue - fee - 1;
+  const changeAmount = totalValue - fee;
 
   const coinSpends = coinRecords.map((coinRecord, index) => {
     const spentPuzzle = wallet.puzzleCache.find(
@@ -210,9 +210,9 @@ export const getServerCoinsByLauncherId = async (
   launcherId: Program,
   options?: Options
 ) => {
-  const wallet = await getWallet(options);
   const node = await getNode(options);
-
+  const wallet = await getWallet(node);
+  
   await wallet.sync();
 
   // Hint is launcherId + 1 to distinguish from Mirror Coin

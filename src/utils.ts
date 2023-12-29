@@ -35,8 +35,7 @@ export const getNode = (options: Options = {}) => {
   return node;
 };
 
-export const getWallet = async (options: Options = {}) => {
-  const node = getNode(options);
+export const getWallet = async (node: FullNode) => {
   const walletRpc = new WalletRpc({
     certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
   });
