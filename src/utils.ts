@@ -4,6 +4,7 @@ import { PrivateKey } from "chia-bls";
 import { FullNode } from "chia-rpc";
 import { KeyStore, StandardWallet } from "chia-wallet-lib";
 import { Program } from "clvm-lib";
+import { mnemonicToSeedSync } from "bip39";
 import WalletRpc from "chia-wallet";
 import { getChiaConfig } from "chia-config-loader";
 import chiaFeeEstimator from "chia-fee-estimator";
@@ -62,7 +63,8 @@ export const getWallet = async (node: FullNode) => {
     throw new Error("Could not get private key");
   }
 
-  const seed = privateKeyInfo?.private_key.seed;
+  const mnemonic = privateKeyInfo?.private_key.seed;
+  const seed = mnemonicToSeedSync(mnemonic);
   const privateKey = PrivateKey.fromSeed(seed);
   const keyStore = new KeyStore(privateKey);
   const wallet = new StandardWallet(node, keyStore);

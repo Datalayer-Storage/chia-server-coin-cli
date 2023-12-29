@@ -46,14 +46,10 @@ export const createServerCoin = async (
     fee = await calculateFee();
   }
 
-  console.log("@@@@@");
-
   const coinRecords = wallet.selectCoinRecords(
     amount + fee,
     CoinSelection.Smallest
   );
-
-  console.log("!!!!!");
 
   if (!coinRecords.length) throw new Error("Insufficient balance");
 
@@ -104,8 +100,6 @@ export const createServerCoin = async (
     coin_spends: coinSpends,
     aggregated_signature: JacobianPoint.infinityG2().toHex(),
   };
-
-  console.log(JSON.stringify(spendBundle, null, 2));
 
   const aggSigMeExtraData = fromHex(getGenesisChallenge());
 
@@ -280,8 +274,8 @@ export const getServerCoinsByLauncherId = async (
 
     servers.push({
       amount: coinRecord.coin.amount,
-      coin_id: formatHex(toHex(toCoinId(coinRecord.coin))),
-      launcher_id: formatHex(launcherId.toHex()),
+      coin_id: sanitizeHex(formatHex(toHex(toCoinId(coinRecord.coin)))),
+      launcher_id: sanitizeHex(formatHex(launcherId.toHex())),
       ours: ourPuzzle !== undefined,
       urls,
     });
