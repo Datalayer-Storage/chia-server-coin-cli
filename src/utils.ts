@@ -77,7 +77,11 @@ export const loadPuzzle = (puzzleName: string) => {
 };
 
 export const calculateFee = () => {
+  const config = getChiaConfig();
+  const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
+
   chiaFeeEstimator.configure({
+    full_node_host: `https://localhost:${defaultFullNodePort}`,
     certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
     default_fee: constants.defaultFeeAmountInMojo,
   });
