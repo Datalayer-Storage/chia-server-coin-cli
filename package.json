@@ -1,14 +1,17 @@
 {
-  "name": "chia-browser-coin-cli",
+  "name": "chia-server-coin-cli",
   "version": "1.0.0",
-  "description": "CLI for creating a browser coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
+  "description": "CLI for creating a server coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
   "main": "./src/index.ts",
+  "bin": {
+    "server_coin": "./src/index.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Datalayer-Storage/chia-browser-coin-cli.git"
+    "url": "git+https://github.com/Datalayer-Storage/chia-server-coin-cli.git"
   },
   "keywords": [
     "chia-blockchain"
@@ -16,9 +19,9 @@
   "author": "Michael Taylor",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Datalayer-Storage/chia-browser-coin-cli/issues"
+    "url": "https://github.com/Datalayer-Storage/chia-server-coin-cli/issues"
   },
-  "homepage": "https://github.com/Datalayer-Storage/chia-browser-coin-cli#readme",
+  "homepage": "https://github.com/Datalayer-Storage/chia-server-coin-cli#readme",
   "devDependencies": {
     "@types/yargs": "^17.0.32",
     "ts-node": "^10.9.2",
