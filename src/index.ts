@@ -8,7 +8,7 @@ import {
   deleteServerCoin,
   getServerCoinsByLauncherId
 } from "./api";
-import { Options } from "./utils";
+import { Options, getNode, getWallet } from "./utils";
 import { Program } from "clvm-lib";
 
 interface ServerCoinCommandArguments {
@@ -169,3 +169,11 @@ async function run() {
 }
 
 run();
+
+export default {
+  getNode,
+  getWallet,
+  createServerCoin,
+  deleteServerCoin,
+  getServerCoinsByLauncherId,
+};

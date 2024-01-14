@@ -1,3 +1,4 @@
+import { memoize } from "lodash";
 import fs from "fs";
 import path from "path";
 import { PrivateKey } from "chia-bls";
@@ -14,10 +15,12 @@ export interface Options {
   feeOverride?: number;
   fullNodeHost?: string;
   fullNodePort?: number;
+  walletHost?: string;
+  walletPort?: number;
   certificateFolderPath?: string;
 }
 
-export const getNode = (options: Options = {}) => {
+export const getNode = memoize((options: Options = {}) => {
   const defaultCertFolderPath = `${process.env.CHIA_ROOT}/config/ssl`;
 
   const resolvePath = (subPath: string) =>
@@ -37,14 +40,17 @@ export const getNode = (options: Options = {}) => {
   });
 
   return node;
-};
+});
 
-export const getWallet = async (node: FullNode) => {
+export const getWallet = memoize(async (node: FullNode, options: Options = {}) => {
   const config = getChiaConfig();
   const defaultWalletPort = config?.wallet?.rpc_port || 9256;
 
+  const walletHost = options.walletHost || "localhost";
+  const port = options.walletPort || defaultWalletPort;
+
   const walletRpc = new WalletRpc({
-    wallet_host: `https://localhost:${defaultWalletPort}`,
+    wallet_host: `https://${walletHost}:${port}`,
     certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
   });
   const fingerprintInfo = await walletRpc.getLoggedInFingerprint({});
@@ -70,19 +76,20 @@ export const getWallet = async (node: FullNode) => {
   const wallet = new StandardWallet(node, keyStore);
 
   return wallet;
-};
+});
 
 export const loadPuzzle = (puzzleName: string) => {
   const puzzlePath = path.join(__dirname, "../puzzles", `${puzzleName}.clsp.hex`);
   return Program.deserializeHex(fs.readFileSync(puzzlePath, "utf8"));
 };
 
-export const calculateFee = () => {
+export const calculateFee = (options: Options = {}) => {
   const config = getChiaConfig();
+  const fullNodeHost = options.fullNodeHost || "localhost";
   const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
 
   chiaFeeEstimator.configure({
-    full_node_host: `https://localhost:${defaultFullNodePort}`,
+    full_node_host: `https://${fullNodeHost}:${defaultFullNodePort}`,
     certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
     default_fee: constants.defaultFeeAmountInMojo,
   });

@@ -31,9 +31,8 @@ export const createServerCoin = async (
   options?: Options
 ) => {
   const node = await getNode(options);
-  const wallet = await getWallet(node);
+  const wallet = await getWallet(node, options);
 
-  console.log("Creating MIrror");
   await wallet.sync();
 
   const hint = Program.fromBigInt(launcherId.toBigInt() + 1n)
@@ -43,7 +42,7 @@ export const createServerCoin = async (
 
   let fee = options?.feeOverride;
   if (!fee) {
-    fee = await calculateFee();
+    fee = await calculateFee(options);
   }
 
   const coinRecords = wallet.selectCoinRecords(
@@ -110,7 +109,7 @@ export const createServerCoin = async (
 
 export const deleteServerCoin = async (coinId: string, options?: Options) => {
   const node = await getNode(options);
-  const wallet = await getWallet(node);
+  const wallet = await getWallet(node, options);
 
   await wallet.sync();
 
@@ -145,7 +144,7 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
 
   let fee = options?.feeOverride;
   if (!fee) {
-    fee = await calculateFee();
+    fee = await calculateFee(options);
   }
 
   const coinRecords = wallet.selectCoinRecords(1 + fee, CoinSelection.Smallest);
@@ -212,7 +211,7 @@ export const getServerCoinsByLauncherId = async (
   options?: Options
 ) => {
   const node = await getNode(options);
-  const wallet = await getWallet(node);
+  const wallet = await getWallet(node, options);
 
   await wallet.sync();
 
