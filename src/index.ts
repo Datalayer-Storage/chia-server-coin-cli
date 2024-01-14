@@ -60,6 +60,14 @@ const commands = {
           describe: "Port for your Full Node",
           type: "number",
         })
+        .option("walletHost", {
+          describe: "Host for your Wallet RPC",
+          type: "string",
+        })
+        .option("walletPort", {
+          describe: "Port for your Wallet RPC",
+          type: "number",
+        })
         .option("certificateFolderPath", {
           describe: "Path to the certificate ssl folder",
           type: "string",
@@ -104,6 +112,14 @@ const commands = {
           describe: "Port for your Full Node",
           type: "number",
         })
+        .option("walletHost", {
+          describe: "Host for your Wallet RPC",
+          type: "string",
+        })
+        .option("walletPort", {
+          describe: "Port for your Wallet RPC",
+          type: "number",
+        })
         .option("certificateFolderPath", {
           describe: "Path to the certificate ssl folder",
           type: "string",
@@ -139,6 +155,14 @@ const commands = {
           describe: "Port for your Full Node",
           type: "number",
         })
+        .option("walletHost", {
+          describe: "Host for your Wallet RPC",
+          type: "string",
+        })
+        .option("walletPort", {
+          describe: "Port for your Wallet RPC",
+          type: "number",
+        })
         .option("certificateFolderPath", {
           describe: "Path to the certificate ssl folder",
           type: "string",
@@ -148,7 +172,7 @@ const commands = {
         await getServerCoinsByLauncherId(Program.fromHex(argv.storeId), {
           fullNodeHost: argv.fullNodeHost as string,
           fullNodePort: argv.fullNodePort as number,
-          certificateFolderPath: argv.certificateFolderPath as string
+          certificateFolderPath: argv.certificateFolderPath as string,
         });
       } catch (error: any) {
         console.error("Error:", error.message);
