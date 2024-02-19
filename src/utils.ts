@@ -1,15 +1,11 @@
 import { memoize } from "lodash";
-import fs from "fs";
-import path from "path";
-import { PrivateKey } from "chia-bls";
-import { FullNode } from "chia-rpc";
-import { KeyStore, StandardWallet } from "chia-wallet-lib";
-import { Program } from "clvm-lib";
-import { mnemonicToSeedSync } from "bip39";
+import { Tls, Peer, Wallet } from "server-coin";
 import WalletRpc from "chia-wallet";
 import { getChiaConfig } from "chia-config-loader";
 import chiaFeeEstimator from "chia-fee-estimator";
 import { constants } from "./constants";
+// @ts-ignore
+import { getChiaRoot } from "chia-root-resolver"; 
 
 export interface Options {
   feeOverride?: number;
@@ -20,38 +16,28 @@ export interface Options {
   certificateFolderPath?: string;
 }
 
-export const getNode = memoize((options: Options = {}) => {
-  const defaultCertFolderPath = `${process.env.CHIA_ROOT}/config/ssl`;
+export const stringToUint8Array = (str: String) => {
+  const buffer = Buffer.from(str, "hex");
+  return new Uint8Array(buffer);
+};
 
-  const resolvePath = (subPath: string) =>
-    path.resolve(
-      `${options.certificateFolderPath || defaultCertFolderPath}/${subPath}`
-    );
-
-  const config = getChiaConfig();
-  const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
-
-  const node = new FullNode({
-    host: options.fullNodeHost || "localhost",
-    port: options.fullNodePort || defaultFullNodePort,
-    certPath: resolvePath("full_node/private_full_node.crt"),
-    keyPath: resolvePath("full_node/private_full_node.key"),
-    caCertPath: resolvePath("ca/chia_ca.crt"),
-  });
-
-  return node;
+export const getPeer = memoize(async () => {
+  const tls = new Tls("wallet.crt", "wallet.key");
+  return Peer.connect("127.0.0.1:8444", "mainnet", tls);
 });
 
-export const getWallet = memoize(async (node: FullNode, options: Options = {}) => {
+export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
   const config = getChiaConfig();
   const defaultWalletPort = config?.wallet?.rpc_port || 9256;
 
   const walletHost = options.walletHost || "localhost";
   const port = options.walletPort || defaultWalletPort;
 
+  const chiaRoot = getChiaRoot();
+
   const walletRpc = new WalletRpc({
     wallet_host: `https://${walletHost}:${port}`,
-    certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
+    certificate_folder_path: `${chiaRoot}/config/ssl`,
   });
   const fingerprintInfo = await walletRpc.getLoggedInFingerprint({});
 
@@ -70,37 +56,35 @@ export const getWallet = memoize(async (node: FullNode, options: Options = {}) =
   }
 
   const mnemonic = privateKeyInfo?.private_key.seed;
-  const seed = mnemonicToSeedSync(mnemonic);
-  const privateKey = PrivateKey.fromSeed(seed);
-  const keyStore = new KeyStore(privateKey);
-  const wallet = new StandardWallet(node, keyStore);
 
-  return wallet;
+  return Wallet.initialSync(
+    peer,
+    mnemonic,
+    Buffer.from(getGenesisChallenge("mainnet"), "hex")
+  );
 });
-
-export const loadPuzzle = (puzzleName: string) => {
-  const puzzlePath = path.join(__dirname, "../puzzles", `${puzzleName}.clsp.hex`);
-  return Program.deserializeHex(fs.readFileSync(puzzlePath, "utf8"));
-};
 
 export const calculateFee = (options: Options = {}) => {
   const config = getChiaConfig();
   const fullNodeHost = options.fullNodeHost || "localhost";
   const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
 
+  const chiaRoot = getChiaRoot();
+
   chiaFeeEstimator.configure({
     full_node_host: `https://${fullNodeHost}:${defaultFullNodePort}`,
-    certificate_folder_path: `${process.env.CHIA_ROOT}/config/ssl`,
+    certificate_folder_path: `${chiaRoot}/config/ssl`,
     default_fee: constants.defaultFeeAmountInMojo,
   });
 
   return chiaFeeEstimator.getFeeEstimate();
 };
 
-export const getGenesisChallenge = () => {
+export const getGenesisChallenge = (networkId = "mainnet") => {
   const config = getChiaConfig();
   const genesisChallenge =
-    config?.farmer?.network_overrides?.constants?.mainnet?.GENESIS_CHALLENGE;
+    config?.farmer?.network_overrides?.constants?.[networkId]
+      ?.GENESIS_CHALLENGE;
 
   if (!genesisChallenge) {
     throw new Error("Could not get genesis challenge");

@@ -8,8 +8,7 @@ import {
   deleteServerCoin,
   getServerCoinsByLauncherId
 } from "./api";
-import { Options, getNode, getWallet } from "./utils";
-import { Program } from "clvm-lib";
+import { Options, getPeer, getWallet } from "./utils";
 
 interface ServerCoinCommandArguments {
   storeId: string;
@@ -75,8 +74,8 @@ const commands = {
     handler: async (argv: Arguments<ServerCoinCommandArguments>) => {
       try {
         await createServerCoin(
-          Program.fromHex(argv.storeId),
-          [Program.fromText(argv.url)],
+          argv.storeId,
+          [argv.url],
           argv.amount,
           {
             feeOverride: argv.fee as number,
@@ -169,11 +168,7 @@ const commands = {
         }),
     handler: async (argv: Arguments<GetServerCoinsCommandArguments>) => {
       try {
-        await getServerCoinsByLauncherId(Program.fromHex(argv.storeId), {
-          fullNodeHost: argv.fullNodeHost as string,
-          fullNodePort: argv.fullNodePort as number,
-          certificateFolderPath: argv.certificateFolderPath as string,
-        });
+        await getServerCoinsByLauncherId(argv.storeId);
       } catch (error: any) {
         console.error("Error:", error.message);
       }
@@ -195,7 +190,7 @@ async function run() {
 run();
 
 export default {
-  getNode,
+  getPeer,
   getWallet,
   createServerCoin,
   deleteServerCoin,
