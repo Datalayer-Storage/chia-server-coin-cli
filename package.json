@@ -17,8 +17,8 @@
     "prepublish": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish_pkg": "rm -rf build && tsc && npm publish",
-    "prepare-binary": "rm -rf build && rm -rf dist && mkdir dist && tsc && cp -r puzzles build",
-    "create-win-x64-dist": "npm run prepare-binary && pkg package.json -t node18-win-x64 --out-path dist",
+    "prepare-binary": "rm -rf build && rm -rf dist && mkdir dist && tsc",
+    "create-win-x64-dist": "npm run prepare-binary && pkg package.json -t node18-win-x64 -o dist/server_coin.exe",
     "create-mac-x64-dist": "npm run prepare-binary && pkg package.json -t node18-macos-x64 --out-path dist",
     "create-linux-x64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-x64 --out-path dist",
     "create-linux-arm64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-arm64 --out-path dist"

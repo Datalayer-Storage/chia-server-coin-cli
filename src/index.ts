@@ -82,6 +82,8 @@ const commands = {
             fullNodeHost: argv.fullNodeHost as string,
             fullNodePort: argv.fullNodePort as number,
             certificateFolderPath: argv.certificateFolderPath as string,
+            walletHost: argv.walletHost as string,
+            walletPort: argv.walletPort as number,
           }
         );
       } catch (error: any) {
@@ -130,6 +132,8 @@ const commands = {
           fullNodeHost: argv.fullNodeHost as string,
           fullNodePort: argv.fullNodePort as number,
           certificateFolderPath: argv.certificateFolderPath as string,
+          walletHost: argv.walletHost as string,
+          walletPort: argv.walletPort as number,
         });
       } catch (error: any) {
         console.error("Error:", error.message);
@@ -168,7 +172,14 @@ const commands = {
         }),
     handler: async (argv: Arguments<GetServerCoinsCommandArguments>) => {
       try {
-        await getServerCoinsByLauncherId(argv.storeId);
+        await getServerCoinsByLauncherId(argv.storeId, {
+          feeOverride: argv.feeOverride as number,
+          fullNodeHost: argv.fullNodeHost as string,
+          fullNodePort: argv.fullNodePort as number,
+          certificateFolderPath: argv.certificateFolderPath as string,
+          walletHost: argv.walletHost as string,
+          walletPort: argv.walletPort as number
+        });
       } catch (error: any) {
         console.error("Error:", error.message);
       }

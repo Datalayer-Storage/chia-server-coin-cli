@@ -21,16 +21,25 @@ export const stringToUint8Array = (str: String) => {
   return new Uint8Array(buffer);
 };
 
-export const getPeer = memoize(async () => {
+export const getPeer = memoize(async (options: Options = {}) => {
   const tls = new Tls("wallet.crt", "wallet.key");
-  return Peer.connect("127.0.0.1:8444", "mainnet", tls);
+  const config = getChiaConfig();
+  const defaultFullNodePort = config?.fullNodeHost?.rpc_port || 8555;
+  const defaultFullNodeHost = "127.0.0.1";
+
+  return Peer.connect(`${options.fullNodeHost || defaultFullNodeHost}:${options.fullNodePort || defaultFullNodePort}`, getSelectedNetwork(), tls);
 });
+
+export const getSelectedNetwork = () => {
+  const config = getChiaConfig();
+  return config?.fullNodeHost?.selected_network || 'mainnet';
+}
 
 export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
   const config = getChiaConfig();
   const defaultWalletPort = config?.wallet?.rpc_port || 9256;
 
-  const walletHost = options.walletHost || "localhost";
+  const walletHost = options.walletHost || "127.0.0.1";
   const port = options.walletPort || defaultWalletPort;
 
   const chiaRoot = getChiaRoot();
@@ -45,8 +54,6 @@ export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
     throw new Error("Could not get fingerprint");
   }
 
-  console.log(`Using fingerprint ${fingerprintInfo.fingerprint}`);
-
   const privateKeyInfo = await walletRpc.getPrivateKey({
     fingerprint: fingerprintInfo.fingerprint,
   });
@@ -60,13 +67,13 @@ export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
   return Wallet.initialSync(
     peer,
     mnemonic,
-    Buffer.from(getGenesisChallenge("mainnet"), "hex")
+    Buffer.from(getGenesisChallenge(getSelectedNetwork()), "hex")
   );
 });
 
 export const calculateFee = (options: Options = {}) => {
   const config = getChiaConfig();
-  const fullNodeHost = options.fullNodeHost || "localhost";
+  const fullNodeHost = options.fullNodeHost || "127.0.0.1";
   const defaultFullNodePort = config?.full_node?.rpc_port || 8555;
 
   const chiaRoot = getChiaRoot();
