@@ -34,7 +34,7 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
     100
   );
 
-  const serverCoin = serverCoins.find((sc) =>
+  const serverCoin = serverCoins.find((sc: any) =>
     bytesEqual(toCoinId(sc.coin), stringToUint8Array(coinId))
   );
 
@@ -52,6 +52,7 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
 
 export const getServerCoinsByLauncherId = async (launcherId: String, options?: Options) => {
   const peer = await getPeer(options);
+
   const coins = await peer.fetchServerCoins(
     stringToUint8Array(launcherId),
     100

@@ -1,4 +1,5 @@
 import { memoize } from "lodash";
+import path from "path";
 import { Tls, Peer, Wallet } from "server-coin";
 import WalletRpc from "chia-wallet";
 import { getChiaConfig } from "chia-config-loader";
@@ -22,9 +23,10 @@ export const stringToUint8Array = (str: String) => {
 };
 
 export const getPeer = memoize(async (options: Options = {}) => {
-  const tls = new Tls("wallet.crt", "wallet.key");
+  const chiaRoot = getChiaRoot();
+  const tls = new Tls(path.resolve(`${chiaRoot}/config/ssl/wallet/public_wallet.crt`), path.resolve(`${chiaRoot}/config/ssl/wallet/public_wallet.key`));
   const config = getChiaConfig();
-  const defaultFullNodePort = config?.fullNodeHost?.rpc_port || 8555;
+  const defaultFullNodePort = config?.full_node?.port || 8444;
   const defaultFullNodeHost = "127.0.0.1";
 
   return Peer.connect(`${options.fullNodeHost || defaultFullNodeHost}:${options.fullNodePort || defaultFullNodePort}`, getSelectedNetwork(), tls);
