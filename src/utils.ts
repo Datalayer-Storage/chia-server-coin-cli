@@ -1,6 +1,7 @@
 import { memoize } from "lodash";
 import path from "path";
-import { Tls, Peer, Wallet } from "server-coin";
+import fs from "fs";
+import { Tls, Peer, Wallet } from "chia-server-coin";
 import WalletRpc from "chia-wallet";
 import { getChiaConfig } from "chia-config-loader";
 import chiaFeeEstimator from "chia-fee-estimator";
@@ -15,6 +16,7 @@ export interface Options {
   walletHost?: string;
   walletPort?: number;
   certificateFolderPath?: string;
+  verbose?: boolean;
 }
 
 export const stringToUint8Array = (str: String) => {
@@ -24,10 +26,27 @@ export const stringToUint8Array = (str: String) => {
 
 export const getPeer = memoize(async (options: Options = {}) => {
   const chiaRoot = getChiaRoot();
-  const tls = new Tls(path.resolve(`${chiaRoot}/config/ssl/wallet/public_wallet.crt`), path.resolve(`${chiaRoot}/config/ssl/wallet/public_wallet.key`));
+
+  const certificateFolderPath = options.certificateFolderPath || `${chiaRoot}/config/ssl`;
+
+  const sslFolder = path.resolve(`${certificateFolderPath}/dig`);
+
+  if (!fs.existsSync(sslFolder)) {
+    if (options?.verbose) {
+      console.log("Creating new SSL certificate at:", sslFolder);
+    }
+    fs.mkdirSync(sslFolder);
+  }
+
+  const tls = new Tls(path.resolve(`${sslFolder}/public_wallet.crt`), path.resolve(`${sslFolder}/public_wallet.key`));
   const config = getChiaConfig();
   const defaultFullNodePort = config?.full_node?.port || 8444;
   const defaultFullNodeHost = "127.0.0.1";
+
+  if (options?.verbose) {
+    console.log("Connecting to full node:", `${options.fullNodeHost || defaultFullNodeHost}:${options.fullNodePort || defaultFullNodePort}`);
+    console.log("Using certificate folder:", sslFolder);
+  }
 
   return Peer.connect(`${options.fullNodeHost || defaultFullNodeHost}:${options.fullNodePort || defaultFullNodePort}`, getSelectedNetwork(), tls);
 });
@@ -46,14 +65,25 @@ export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
 
   const chiaRoot = getChiaRoot();
 
+  const certificateFolderPath = path.resolve(options.certificateFolderPath || `${chiaRoot}/config/ssl`);
+
+  if (options?.verbose) {
+    console.log("Connecting to wallet:", `https://${walletHost}:${port}`);
+    console.log("Using certificate folder:", certificateFolderPath);
+  }
+
   const walletRpc = new WalletRpc({
     wallet_host: `https://${walletHost}:${port}`,
-    certificate_folder_path: `${chiaRoot}/config/ssl`,
+    certificate_folder_path: certificateFolderPath,
   });
   const fingerprintInfo = await walletRpc.getLoggedInFingerprint({});
 
   if (fingerprintInfo?.success === false) {
     throw new Error("Could not get fingerprint");
+  }
+
+  if (options?.verbose) {
+    console.log("Fingerprint info:", fingerprintInfo);
   }
 
   const privateKeyInfo = await walletRpc.getPrivateKey({
@@ -65,6 +95,12 @@ export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
   }
 
   const mnemonic = privateKeyInfo?.private_key.seed;
+
+  if (options?.verbose) {
+    console.log("Using Seed:", mnemonic);
+    console.log("Using Genesis Challenge:", getGenesisChallenge(getSelectedNetwork()));
+    console.log("Using Network:", getSelectedNetwork());
+  }
 
   return Wallet.initialSync(
     peer,

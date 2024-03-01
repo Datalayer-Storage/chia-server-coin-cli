@@ -49,9 +49,9 @@
     "chia-config-loader": "^1.0.1",
     "chia-fee-estimator": "^1.0.9",
     "chia-root-resolver": "^1.0.0",
+    "chia-server-coin": "^0.0.3",
     "chia-wallet": "^1.0.18",
     "lodash": "^4.17.21",
-    "server-coin": "file:../server-coin",
     "yargs": "^17.7.2"
   }
 }

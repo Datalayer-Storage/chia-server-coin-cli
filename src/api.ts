@@ -1,4 +1,4 @@
-import { bytesEqual, toCoinId } from "server-coin";
+import { bytesEqual, toCoinId } from "chia-server-coin";
 import { constants } from "./constants";
 import { Options } from "./utils";
 
@@ -13,7 +13,9 @@ export const createServerCoin = async (
   const peer = await getPeer(options);
   const wallet = await getWallet(peer, options);
 
-  console.log(await wallet.derivationIndex());
+  if (options?.verbose) {
+    console.log('derivation index:', await wallet.derivationIndex());
+  }
 
   console.log(
     await wallet.createServerCoin(
@@ -25,25 +27,27 @@ export const createServerCoin = async (
   );
 };
 
-export const deleteServerCoin = async (coinId: string, options?: Options) => {
+export const deleteServerCoin = async (storeId: string, coinId: string, options?: Options) => {
   const peer = await getPeer(options);
   const wallet = await getWallet(peer, options);
 
-  const serverCoins = await peer.fetchServerCoins(
-    stringToUint8Array(coinId),
-    100
-  );
+  const serverCoinIter = await peer.fetchServerCoins(stringToUint8Array(storeId));
 
-  const serverCoin = serverCoins.find((sc: any) =>
-    bytesEqual(toCoinId(sc.coin), stringToUint8Array(coinId))
-  );
+  const coinsToDelete = [];
 
-  if (!serverCoin) {
-    throw new Error("Coin not found.");
+  while (true) {
+    const next = await serverCoinIter.next();
+    if (next === null) {
+      break;
+    }
+
+    if (bytesEqual(toCoinId(next.coin), stringToUint8Array(coinId))) {
+      coinsToDelete.push(next);
+    }
   }
 
   await wallet.deleteServerCoins(
-    [serverCoin.coin],
+    coinsToDelete.map((coin) => coin.coin),
     options?.feeOverride || constants.defaultFeeAmountInMojo
   );
 
@@ -53,15 +57,22 @@ export const deleteServerCoin = async (coinId: string, options?: Options) => {
 export const getServerCoinsByLauncherId = async (launcherId: String, options?: Options) => {
   const peer = await getPeer(options);
 
-  const coins = await peer.fetchServerCoins(
-    stringToUint8Array(launcherId),
-    100
-  );
+  const serverCoins = [];
+
+  const serverCoinIter = await peer.fetchServerCoins(stringToUint8Array(launcherId));
+
+  while (true) {
+    const next = await serverCoinIter.next();
+    if (next === null) {
+      break;
+    }
+    serverCoins.push(next);
+  }
 
   const wallet = await getWallet(peer, options);
 
-  const serverCoins = await Promise.all(
-    coins.map(async (coinRecord) => {
+  const serverInfo = await Promise.all(
+    serverCoins.map(async (coinRecord) => {
       const ours = await wallet.hasPuzzleHash(coinRecord.p2PuzzleHash);
       return {
         amount: coinRecord.coin.amount,
@@ -75,7 +86,7 @@ export const getServerCoinsByLauncherId = async (launcherId: String, options?: O
 
   console.log(
     JSON.stringify({
-      servers: serverCoins,
+      servers: serverInfo,
     }, null, 2)
   );
 };

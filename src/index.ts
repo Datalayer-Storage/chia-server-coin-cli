@@ -18,6 +18,7 @@ interface ServerCoinCommandArguments {
 }
 
 interface DeleteServerCoinCommandArguments {
+  storeId: string;
   coinId: string;
   options?: Options;
 }
@@ -70,6 +71,10 @@ const commands = {
         .option("certificateFolderPath", {
           describe: "Path to the certificate ssl folder",
           type: "string",
+        })
+        .option("verbose", {
+          describe: "Extra logging for debugging purposes",
+          type: "string",
         }),
     handler: async (argv: Arguments<ServerCoinCommandArguments>) => {
       try {
@@ -84,6 +89,7 @@ const commands = {
             certificateFolderPath: argv.certificateFolderPath as string,
             walletHost: argv.walletHost as string,
             walletPort: argv.walletPort as number,
+            verbose: argv.verbose as boolean
           }
         );
       } catch (error: any) {
@@ -96,6 +102,11 @@ const commands = {
     desc: "Deletes a Server Coin on the blockchain for the specified datalayer store",
     builder: (yargs: Argv) =>
       yargs
+        .option("storeId", {
+          describe: "Store ID",
+          type: "string",
+          demandOption: true,
+        })
         .option("coinId", {
           describe: "Coin ID",
           type: "string",
@@ -124,16 +135,21 @@ const commands = {
         .option("certificateFolderPath", {
           describe: "Path to the certificate ssl folder",
           type: "string",
+        })
+        .option("verbose", {
+          describe: "Extra logging for debugging purposes",
+          type: "boolean",
         }),
     handler: async (argv: Arguments<DeleteServerCoinCommandArguments>) => {
       try {
-        await deleteServerCoin(argv.coinId, {
+        await deleteServerCoin(argv.storeId, argv.coinId, {
           feeOverride: argv.feeOverride as number,
           fullNodeHost: argv.fullNodeHost as string,
           fullNodePort: argv.fullNodePort as number,
           certificateFolderPath: argv.certificateFolderPath as string,
           walletHost: argv.walletHost as string,
           walletPort: argv.walletPort as number,
+          verbose: argv.verbose as boolean
         });
       } catch (error: any) {
         console.error("Error:", error.message);
@@ -169,6 +185,10 @@ const commands = {
         .option("certificateFolderPath", {
           describe: "Path to the certificate ssl folder",
           type: "string",
+        })
+        .option("verbose", {
+          describe: "Extra logging for debugging purposes",
+          type: "boolean",
         }),
     handler: async (argv: Arguments<GetServerCoinsCommandArguments>) => {
       try {
@@ -178,7 +198,8 @@ const commands = {
           fullNodePort: argv.fullNodePort as number,
           certificateFolderPath: argv.certificateFolderPath as string,
           walletHost: argv.walletHost as string,
-          walletPort: argv.walletPort as number
+          walletPort: argv.walletPort as number,
+          verbose: argv.verbose as boolean
         });
       } catch (error: any) {
         console.error("Error:", error.message);
