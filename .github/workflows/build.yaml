@@ -1,0 +1,126 @@
+name: Build Binaries
+
+on:
+  push:
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Binaries on ${{ matrix.os }} for ${{ matrix.architecture }}
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: Windows
+            architecture: x64
+            runs-on: windows-2019
+            node-version: '18.16'
+            artifact-name: server_coin-win-x64
+            build-command: npm run create-win-x64-dist
+          - os: Linux
+            architecture: x64
+            runs-on: ubuntu-latest
+            node-version: '18.16'
+            artifact-name: server_coin-linux-x64
+            build-command: npm run create-linux-x64-dist
+          - os: Linux
+            architecture: ARM64
+            runs-on: ubuntu-latest
+            node-version: '18.16'
+            artifact-name: server_coin-linux-arm64
+            build-command: npm run create-linux-arm64-dist
+
+    steps:
+      - name: Clean workspace
+        uses: Chia-Network/actions/clean-workspace@main
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: npm install
+        run: npm install
+
+      - name: npm cache management
+        run: |
+          npm cache clear --force
+          npm cache rm --force
+          npm cache verify
+
+      - name: Create distributions
+        run: ${{ matrix.build-command }}
+
+      - name: Make executable (Linux)
+        if: startsWith(matrix.os, 'Linux')
+        run: chmod +x dist/*
+
+      - name: Setup Certificate (Windows)
+        if: matrix.os == 'Windows'
+        run: |
+          echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > /d/Certificate_pkcs12.p12
+          cat /d/Certificate_pkcs12.p12
+        shell: bash
+
+      - name: Set variables (Windows)
+        id: variables
+        if: matrix.os == 'Windows'
+        run: |
+          echo "::set-output name=version::${GITHUB_REF#refs/tags/v}"
+          echo "::set-output name=KEYPAIR_NAME::Key_454819080"
+          echo "SM_HOST=${{ secrets.SM_HOST }}" >> "$GITHUB_ENV"
+          echo "SM_API_KEY=${{ secrets.SM_API_KEY }}" >> "$GITHUB_ENV"
+          echo "SM_CLIENT_CERT_FILE=D:\\Certificate_pkcs12.p12" >> "$GITHUB_ENV"
+          echo "SM_CLIENT_CERT_PASSWORD=${{ secrets.SM_CLIENT_CERT_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "C:\Program Files (x86)\Windows Kits\10\App Certification Kit" >> $GITHUB_PATH
+          echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
+          echo "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools" >> $GITHUB_PATH
+          echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Setting up the client tools
+        if: matrix.os == 'Windows'
+        run: |
+          curl -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/Keylockertools-windows-x64.msi/download?account_id=e94ff86e-6519-4598-a066-6b6b252245f0 -H "x-api-key:%SM_API_KEY%" -o smtools-windows-x64.msi
+          msiexec /i smtools-windows-x64.msi /qn
+        shell: cmd
+
+      - name: Setup SSM KSP on windows latest
+        if: matrix.os == 'Windows'
+        run: |
+          curl -X GET  https://stage.one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:%SM_API_KEY%" -o smtools-windows-x64.msi
+          msiexec /i smtools-windows-x64.msi /quiet /qn
+          smksp_registrar.exe list
+          smctl.exe keypair ls
+          C:\Windows\System32\certutil.exe -csp "DigiCert Signing Manager KSP" -key -user
+          smksp_cert_sync.exe
+        shell: cmd
+
+      - name: Signing using Signtool
+        if: matrix.os == 'Windows'
+        run: |
+          signtool.exe sign /sha1 ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }} /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 ${{ github.workspace }}\dist\server_coin.exe
+
+      - name: Signtool verify
+        if: matrix.os == 'Windows'
+        run: |
+          signtool verify /v /pa ${{ github.workspace }}\dist\server_coin.exe
+        shell: cmd
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.artifact-name }}-${{ github.run_number }}.zip
+          path: ${{ github.workspace }}/dist

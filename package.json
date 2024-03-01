@@ -1,6 +1,6 @@
 {
   "name": "chia-server-coin-cli",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "description": "CLI for creating a server coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
   "main": "build/index.js",
   "bin": {
@@ -19,9 +19,9 @@
     "publish_pkg": "rm -rf build && tsc && npm publish",
     "prepare-binary": "rm -rf build && rm -rf dist && mkdir dist && tsc",
     "create-win-x64-dist": "npm run prepare-binary && pkg package.json -t node18-win-x64 -o dist/server_coin.exe",
-    "create-mac-x64-dist": "npm run prepare-binary && pkg package.json -t node18-macos-x64 --out-path dist",
-    "create-linux-x64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-x64 --out-path dist",
-    "create-linux-arm64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-arm64 --out-path dist"
+    "create-mac-x64-dist": "npm run prepare-binary && pkg package.json -t node18-macos-x64 -o dist/server_coin",
+    "create-linux-x64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-x64 -o dist/server_coin",
+    "create-linux-arm64-dist": "npm run prepare-binary && pkg package.json -t node18-linux-arm64 -o dist/server_coin"
   },
   "repository": {
     "type": "git",
