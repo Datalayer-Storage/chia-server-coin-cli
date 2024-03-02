@@ -123,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
-          path: ${{ matrix.artifact-name }}
+          path: ${{ github.workspace }}/dist
 
   release:
     runs-on: ubuntu-latest
@@ -153,7 +153,6 @@ jobs:
         id: tag-name
         run: |
           echo "TAGNAME=$(echo $GITHUB_REF | cut -d / -f 3)" >>$GITHUB_OUTPUT
-
       
       - name: Create zips
         run: |
