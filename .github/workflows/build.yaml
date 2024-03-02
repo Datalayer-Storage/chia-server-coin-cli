@@ -154,25 +154,24 @@ jobs:
         run: |
           echo "TAGNAME=$(echo $GITHUB_REF | cut -d / -f 3)" >>$GITHUB_OUTPUT
       
-          - name: Create zips
-          run: |
-            # Change directory and zip 'server_coin.exe' for win-x64
-            cd server_coin-win-x64
-            zip -r ../server_coin-win-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin.exe
-            cd ..
+      - name: Create zips
+        run: |
+          # Change directory and zip 'server_coin.exe' for win-x64
+          cd server_coin-win-x64
+          zip -r ../server_coin-win-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin.exe
+          cd ..
+      
+          # Change directory and zip 'server_coin' for linux-x64
+          cd server_coin-linux-x64
+          zip -r ../server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin
+          cd ..
+      
+          # Change directory and zip 'server_coin' for linux-arm64
+          cd server_coin-linux-arm64
+          zip -r ../server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin
+          cd ..
+        shell: bash
         
-            # Change directory and zip 'server_coin' for linux-x64
-            cd server_coin-linux-x64
-            zip -r ../server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin
-            cd ..
-        
-            # Change directory and zip 'server_coin' for linux-arm64
-            cd server_coin-linux-arm64
-            zip -r ../server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin
-            cd ..
-          shell: bash
-        
-
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
         with:
