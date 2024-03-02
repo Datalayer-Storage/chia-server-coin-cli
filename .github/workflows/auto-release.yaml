@@ -20,6 +20,13 @@ jobs:
 
       - name: Checkout current branch
         uses: actions/checkout@v3
+      
+      - name: Set Git identity
+        run: |
+          git config --local user.email "automation@michaeltaylor.dev"
+          git config --local user.name "Automation"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check for current version tag. Create if it doesn't exist
         run: |
