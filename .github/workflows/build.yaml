@@ -130,28 +130,27 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v3
-        with:
-          name: ${{ needs.build.outputs.artifact-name }}-${{ github.run_number }}.zip
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
-          tag_name: ${{ github.run_id }}
-          release_name: Release ${{ github.run_id }}
+          tag_name: ${{ github.ref_name }}  # This uses the tag that triggered the workflow
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-
+  
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ needs.build.outputs.artifact-name }}-${{ github.run_number }}.zip
-          asset_name: ${{ needs.build.outputs.artifact-name }}-${{ github.run_id }}.zip
+          asset_path: ./<artifact_name>.zip  # Specify the path to the artifact
+          asset_name: <artifact_name>.zip  # Specify the name for the artifact in the release
           asset_content_type: application/zip
+  
