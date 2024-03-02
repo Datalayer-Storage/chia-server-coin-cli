@@ -82,10 +82,6 @@ export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
     throw new Error("Could not get fingerprint");
   }
 
-  if (options?.verbose) {
-    console.log("Fingerprint info:", fingerprintInfo);
-  }
-
   const privateKeyInfo = await walletRpc.getPrivateKey({
     fingerprint: fingerprintInfo.fingerprint,
   });
@@ -97,8 +93,6 @@ export const getWallet = memoize(async (peer: Peer, options: Options = {}) => {
   const mnemonic = privateKeyInfo?.private_key.seed;
 
   if (options?.verbose) {
-    console.log("Using Seed:", mnemonic);
-    console.log("Using Genesis Challenge:", getGenesisChallenge(getSelectedNetwork()));
     console.log("Using Network:", getSelectedNetwork());
   }
 
