@@ -122,44 +122,49 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.artifact-name }}-${{ github.run_number }}.zip
-          path: ${{ github.workspace }}/dist
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-name }}
 
-  create_release:
-    needs: build
+  release:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build
     steps:
-      - name: Download all artifacts
+      - name: Download Windows artifacts
         uses: actions/download-artifact@v3
-        # This downloads all artifacts into the runner's workspace
-  
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}  # This uses the tag that triggered the workflow
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-  
-      - name: Upload Release Assets
+          name: server_coin-win-x64
+          path: server_coin-win-x64
+
+      - name: Download Linux x64 deb
+        uses: actions/download-artifact@v3
+        with:
+          name: server_coin-linux-x64
+          path: server_coin-linux-x64
+
+      - name: Download Linux arm64 deb
+        uses: actions/download-artifact@v3
+        with:
+          name: server_coin-linux-arm64
+          path: server_coin-linux-arm64
+
+      - name: Get tag name
+        id: tag-name
         run: |
-          for artifact in *.zip; do
-            if [ -f "$artifact" ]; then
-              echo "Uploading $artifact"
-              curl \
-                -X POST \
-                -H "Authorization: token ${{ secrets.GH_ACCESS_TOKEN }}" \
-                -H "Content-Type: application/zip" \
-                --data-binary @"$artifact" \
-                "${{ steps.create_release.outputs.upload_url }}?name=$(basename "$artifact")&label=$(basename "$artifact")"
-            fi
-          done
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-  
-  
+          echo "TAGNAME=$(echo $GITHUB_REF | cut -d / -f 3)" >>$GITHUB_OUTPUT
+
+      
+      - name: Create zips
+        run: |
+          zip -r server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-win-x64
+          zip -r server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-linux-x64
+          zip -r server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-linux-arm64
+
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          files: |
+            server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip
+            server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip
+            server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip
