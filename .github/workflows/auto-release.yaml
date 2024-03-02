@@ -11,8 +11,8 @@ concurrency:
   group: main-release-check
 
 jobs:
-  check-version:
-    name: Check version increment
+  release:
+    name: release
     runs-on: ubuntu-latest
     steps:
       - name: Clean workspace
@@ -20,12 +20,6 @@ jobs:
 
       - name: Checkout current branch
         uses: actions/checkout@v3
-
-      - name: Setup commit signing for ChiaAutomation
-        uses: Chia-Network/actions/commit-sign/gpg@main
-        with:
-          gpg_private_key: ${{ secrets.PRIVATE_GPG_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Check for current version tag. Create if it doesn't exist
         run: |
