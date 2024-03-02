@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           # Need PACKAGE_ADMIN_PAT token so when the tag is created, the tag automation runs
-          token: ${{ secrets.PACKAGE_ADMIN_PAT }}
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
           fetch-depth: 0
       
       - name: Set Git identity
