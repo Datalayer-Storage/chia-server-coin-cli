@@ -156,9 +156,9 @@ jobs:
       
       - name: Create zips
         run: |
-          zip -r server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-win-x64
-          zip -r server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-linux-x64
-          zip -r server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-linux-arm64
+          zip -r server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-win-x64/server_coin.exe
+          zip -r server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-linux-x64/server_coin
+          zip -r server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin-linux-arm64/server_coin
 
       - name: Release
         uses: softprops/action-gh-release@v0.1.15
@@ -167,3 +167,5 @@ jobs:
             server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip
             server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip
             server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
