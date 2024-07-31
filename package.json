@@ -1,6 +1,6 @@
 {
   "name": "chia-server-coin-cli",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "description": "CLI for creating a server coin on the Chia Blockchain - Used for discovering Decentralized Internet Gateway Peers",
   "main": "build/index.js",
   "bin": {
@@ -51,6 +51,7 @@
     "chia-root-resolver": "^1.0.0",
     "chia-server-coin": "^0.0.3",
     "chia-wallet": "^1.0.18",
+    "dns": "^0.2.2",
     "lodash": "^4.17.21",
     "yargs": "^17.7.2"
   }
