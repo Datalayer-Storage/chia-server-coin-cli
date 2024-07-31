@@ -90,11 +90,11 @@ jobs:
     needs:
       - build
     steps:
-      - name: Download Windows artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: server_coin-win-x64
-          path: server_coin-win-x64
+      #- name: Download Windows artifacts
+      #  uses: actions/download-artifact@v3
+      #  with:
+      #    name: server_coin-win-x64
+      #    path: server_coin-win-x64
 
       - name: Download Linux x64 deb
         uses: actions/download-artifact@v3
@@ -116,9 +116,9 @@ jobs:
       - name: Create zips
         run: |
           # Change directory and zip 'server_coin.exe' for win-x64
-          cd server_coin-win-x64
-          zip -r ../server_coin-win-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin.exe
-          cd ..
+          # cd server_coin-win-x64
+          # zip -r ../server_coin-win-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip server_coin.exe
+          # cd ..
       
           # Change directory and zip 'server_coin' for linux-x64
           cd server_coin-linux-x64
@@ -135,7 +135,7 @@ jobs:
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: |
-            server_coin-win-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip
+            # server_coin-win-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip
             server_coin-linux-x64-${{ steps.tag-name.outputs.TAGNAME }}.zip
             server_coin-linux-arm64-${{ steps.tag-name.outputs.TAGNAME }}.zip
         env:
