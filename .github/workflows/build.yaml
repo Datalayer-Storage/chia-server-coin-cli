@@ -72,11 +72,11 @@ jobs:
         uses: ./.github/actions/signing-steps
         with:
           ARTIFACT_PATHS: ${{ github.workspace }}\dist\server_coin.exe
-          SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
-          SM_HOST: ${{ secrets.SM_HOST }}
-          SM_API_KEY: ${{ secrets.SM_API_KEY }}
-          SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
-          SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
+          SM_CLIENT_CERT_FILE_B64: ${{ secrets.DIGI_CERT_SM_CLIENT_CERT_FILE_B64 }}
+          SM_HOST: ${{ secrets.DIGI_CERT_SM_HOST }}
+          SM_API_KEY: ${{ secrets.DIGI_CERT_SM_API_KEY }}
+          SM_CLIENT_CERT_PASSWORD: ${{ secrets.DIGI_CERT_SM_CLIENT_CERT_PASSWORD }}
+          SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.DIGI_CERT_SM_CODE_SIGNING_CERT_SHA1_HASH }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
