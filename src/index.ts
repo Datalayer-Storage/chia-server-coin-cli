@@ -75,6 +75,10 @@ const commands = {
         .option("verbose", {
           describe: "Extra logging for debugging purposes",
           type: "string",
+        })
+        .option("autoFindPeer", {
+          describe: "Automatically find a peer to connect to",
+          type: "boolean",
         }),
     handler: async (argv: Arguments<ServerCoinCommandArguments>) => {
       try {
@@ -89,7 +93,8 @@ const commands = {
             certificateFolderPath: argv.certificateFolderPath as string,
             walletHost: argv.walletHost as string,
             walletPort: argv.walletPort as number,
-            verbose: argv.verbose as boolean
+            verbose: argv.verbose as boolean,
+            autoFindPeer: argv.autoFindPeer as boolean
           }
         );
       } catch (error: any) {
@@ -139,6 +144,10 @@ const commands = {
         .option("verbose", {
           describe: "Extra logging for debugging purposes",
           type: "boolean",
+        })
+        .option("autoFindPeer", {
+          describe: "Automatically find a peer to connect to",
+          type: "boolean",
         }),
     handler: async (argv: Arguments<DeleteServerCoinCommandArguments>) => {
       try {
@@ -149,7 +158,8 @@ const commands = {
           certificateFolderPath: argv.certificateFolderPath as string,
           walletHost: argv.walletHost as string,
           walletPort: argv.walletPort as number,
-          verbose: argv.verbose as boolean
+          verbose: argv.verbose as boolean,
+          autoFindPeer: argv.autoFindPeer as boolean
         });
       } catch (error: any) {
         console.error("Error:", error.message);
@@ -189,6 +199,10 @@ const commands = {
         .option("verbose", {
           describe: "Extra logging for debugging purposes",
           type: "boolean",
+        })
+        .option("autoFindPeer", {
+          describe: "Automatically find a peer to connect to",
+          type: "boolean",
         }),
     handler: async (argv: Arguments<GetServerCoinsCommandArguments>) => {
       try {
@@ -199,7 +213,8 @@ const commands = {
           certificateFolderPath: argv.certificateFolderPath as string,
           walletHost: argv.walletHost as string,
           walletPort: argv.walletPort as number,
-          verbose: argv.verbose as boolean
+          verbose: argv.verbose as boolean,
+          autoFindPeer: argv.autoFindPeer as boolean
         });
       } catch (error: any) {
         console.error("Error:", error.message);

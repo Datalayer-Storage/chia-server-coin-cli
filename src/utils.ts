@@ -1,6 +1,8 @@
 import { memoize } from "lodash";
 import path from "path";
 import fs from "fs";
+import dns from 'dns';
+import { promisify } from 'util';
 import { Tls, Peer, Wallet } from "chia-server-coin";
 import WalletRpc from "chia-wallet";
 import { getChiaConfig } from "chia-config-loader";
@@ -8,6 +10,8 @@ import chiaFeeEstimator from "chia-fee-estimator";
 import { constants } from "./constants";
 // @ts-ignore
 import { getChiaRoot } from "chia-root-resolver"; 
+
+const resolveA = promisify(dns.resolve4);
 
 export interface Options {
   feeOverride?: number;
@@ -17,12 +21,30 @@ export interface Options {
   walletPort?: number;
   certificateFolderPath?: string;
   verbose?: boolean;
+  autoFindPeer?: boolean;
 }
 
 export const stringToUint8Array = (str: String) => {
   const buffer = Buffer.from(str, "hex");
   return new Uint8Array(buffer);
 };
+
+async function getRandomPeerIP() {
+  try {
+    const records = await resolveA('dns-introducer.chia.net');
+    const ips = records.flat();
+    if (ips.length === 0) {
+      throw new Error('No IPs found in DNS records.');
+    }
+    const randomIP = ips[Math.floor(Math.random() * ips.length)];
+    console.log(`Using Fullnode IP: ${randomIP}`);
+    return randomIP;
+  } catch (error) {
+    console.error('Error resolving DNS:', error);
+    console.log('Using default IP: "127.0.0.1"');
+    return "127.0.0.1";
+  }
+}
 
 export const getPeer = memoize(async (options: Options = {}) => {
   const chiaRoot = getChiaRoot();
@@ -41,7 +63,11 @@ export const getPeer = memoize(async (options: Options = {}) => {
   const tls = new Tls(path.resolve(`${sslFolder}/public_wallet.crt`), path.resolve(`${sslFolder}/public_wallet.key`));
   const config = getChiaConfig();
   const defaultFullNodePort = config?.full_node?.port || 8444;
-  const defaultFullNodeHost = "127.0.0.1";
+  let defaultFullNodeHost = "127.0.0.1";
+
+  if (options?.autoFindPeer) {
+    defaultFullNodeHost = await getRandomPeerIP();
+  }
 
   if (options?.verbose) {
     console.log("Connecting to full node:", `${options.fullNodeHost || defaultFullNodeHost}:${options.fullNodePort || defaultFullNodePort}`);
