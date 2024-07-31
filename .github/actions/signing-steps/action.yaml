@@ -32,7 +32,7 @@ runs:
       id: variables
       run: |
         echo "::set-output name=version::${GITHUB_REF#refs/tags/v}"
-        echo "::set-output name=KEYPAIR_NAME::Key_454819080"
+        echo "::set-output name=KEYPAIR_NAME::Key_733288568"
         echo "SM_HOST=${{ inputs.SM_HOST }}" >> "$GITHUB_ENV"
         echo "SM_API_KEY=${{ inputs.SM_API_KEY }}" >> "$GITHUB_ENV"
         echo "SM_CLIENT_CERT_FILE=D:\\Certificate_pkcs12.p12" >> "$GITHUB_ENV"
