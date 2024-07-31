@@ -20,12 +20,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: Windows
-            architecture: x64
-            runs-on: windows-2019
-            node-version: '18.16'
-            artifact-name: server_coin-win-x64
-            build-command: npm run create-win-x64-dist
+          #- os: Windows
+          #  architecture: x64
+          #  runs-on: windows-2019
+          #  node-version: '18.16'
+          #  artifact-name: server_coin-win-x64
+          #  build-command: npm run create-win-x64-dist
           - os: Linux
             architecture: x64
             runs-on: ubuntu-latest
